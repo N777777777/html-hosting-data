@@ -3,5 +3,10 @@
     "username": "testuser",
     "password_hash": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
     "created_at": "2025-09-21T11:31:43.159967"
+  },
+  {
+    "username": "BTC123",
+    "password_hash": "5bdc508649149dd9b56cb47c9ef60d1e40cd52b6a5cdfb55e3d37215e9dabc29",
+    "created_at": "2025-09-21T11:36:01.576965"
   }
 ]
