@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لعبة سلاحف النينجا — Dino Style</title>
+  <style>
+    :root{ --bg:#f7f7f7; --ground:#444; --turtle:#2e8b57; --accent:#ffd24d }
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial, sans-serif;direction:rtl}
+    .wrap{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(180deg,#e7f7ff 0%,var(--bg) 60%)}
+    .card{width:min(900px,96vw);max-width:1000px;background:transparent;display:grid;grid-template-columns:1fr 340px;gap:18px;padding:18px}
+    .game{background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center}
+    canvas{background:linear-gradient(180deg,#cfefff 0%, #eaf6ff 60%);border-radius:12px;box-shadow:0 8px 24px rgba(15,30,50,0.12)}
+    .panel{background:rgba(255,255,255,0.92);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(10,20,40,0.06)}
+    .panel h3{margin:0 0 8px 0;font-size:18px}
+    .controls{display:flex;flex-direction:column;gap:8px}
+    .btn{padding:10px;border-radius:10px;border:0;font-weight:600;cursor:pointer}
+    .btn.primary{background:var(--accent)}
+    .meta{font-size:14px;color:#333;margin-top:8px}
+    .footer{margin-top:12px;font-size:13px;color:#666}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="game">
+        <canvas id="gameCanvas" width="800" height="260" role="img" aria-label="لعبة سلاحف النينجا — تجنب الحواجز"></canvas>
+      </div>
+
+      <div class="panel">
+        <h3>لعبة سلاحف النينجا — Dino Style</h3>
+        <div class="controls">
+          <button id="startBtn" class="btn primary">ابدأ / إعادة تشغيل</button>
+          <button id="pauseBtn" class="btn">إيقاف / استمرار</button>
+        </div>
+
+        <div class="meta">
+          <div>المسافات المتجاوزة: <strong id="score">0</strong></div>
+          <div>السرعة: <strong id="speed">1.0</strong>x</div>
+          <div style="margin-top:8px">التحكم: زر المسافة أو السهم لأعلى للقفز. للموبايل اضغط الشاشة.</div>
+        </div>
+
+        <div class="footer">صغيرة وبسيطة — لو عايز أزيد صور أو أصوات قولي.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ---- إعداد اللعبة ----
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const scoreEl = document.getElementById('score');
+  const speedEl = document.getElementById('speed');
+
+  // قابل للتعديل
+  let game = null;
+
+  class Turtle { // اللاعب — نمط ديناصور بسيط
+    constructor(x,y){
+      this.x = x; this.y = y; this.w = 44; this.h = 36;
+      this.vy = 0; this.gravity = 0.9; this.jumpPower = -15; this.grounded = false;
+      this.color = '#2e8b57';
+    }
+    update(){
+      this.vy += this.gravity;
+      this.y += this.vy;
+      if(this.y + this.h >= groundY){ this.y = groundY - this.h; this.vy = 0; this.grounded = true; } else this.grounded = false;
+    }
+    jump(){ if(this.grounded){ this.vy = this.jumpPower; this.grounded = false; }}
+    draw(ctx){
+      // simple turtle body — head + shell
+      // body (shell)
+      ctx.fillStyle = this.color; ctx.beginPath(); ctx.ellipse(this.x + this.w/2, this.y + this.h/2 - 2, this.w/2, this.h/2, 0, 0, Math.PI*2); ctx.fill();
+      // head
+      ctx.fillStyle = '#6fbf73'; ctx.beginPath(); ctx.arc(this.x + this.w - 6, this.y + 12, 9, 0, Math.PI*2); ctx.fill();
+      // eye band
+      ctx.fillStyle = '#2b5ea6'; ctx.fillRect(this.x + 6, this.y + 12, this.w - 22, 6);
+      // legs
+      ctx.fillStyle = '#2e8b57'; ctx.fillRect(this.x + 6, this.y + this.h - 6, 8, 6); ctx.fillRect(this.x + this.w - 16, this.y + this.h - 6, 8, 6);
+    }
+  }
+
+  class Obstacle {
+    constructor(x,w,h, speed){ this.x = x; this.w = w; this.h = h; this.y = groundY - h; this.speed = speed; }
+    update(dt){ this.x -= this.speed * dt; }
+    offscreen(){ return this.x + this.w < -50; }
+    draw(ctx){ ctx.fillStyle = '#6b6b6b'; ctx.fillRect(this.x, this.y, this.w, this.h); }
+    collides(t){
+      return !(t.x + t.w < this.x || t.x > this.x + this.w || t.y + t.h < this.y || t.y > this.y + this.h);
+    }
+  }
+
+  // عالم اللعبة
+  const groundY = canvas.height - 40;
+
+  function createGame(){
+    return {
+      turtle: new Turtle(80, groundY - 36),
+      obstacles: [],
+      running: false,
+      paused: false,
+      lastTime: 0,
+      spawnTimer: 0,
+      spawnInterval: 1200, // ms
+      score: 0,
+      speedMultiplier: 1,
+      baseSpeed: 0.22, // px per ms
+      gameOver: false
+    };
+  }
+
+  function reset(){ game = createGame(); updateUI(); }
+
+  // Spawn obstacles with some randomness
+  function spawnObstacle(){
+    const r = Math.random();
+    if(r < 0.6){ // small cactus
+      return new Obstacle(canvas.width + 60, 20, 36, game.baseSpeed * 1.0 * game.speedMultiplier);
+    } else if(r < 0.9){ // tall
+      return new Obstacle(canvas.width + 60, 28, 54, game.baseSpeed * 1.0 * game.speedMultiplier);
+    } else { // double block
+      return new Obstacle(canvas.width + 60, 48, 44, game.baseSpeed * 1.0 * game.speedMultiplier);
+    }
+  }
+
+  function updateUI(){ scoreEl.textContent = Math.floor(game.score); speedEl.textContent = game.speedMultiplier.toFixed(2); }
+
+  // main loop
+  function loop(ts){
+    if(!game.running) return;
+    if(game.paused){ game.lastTime = ts; requestAnimationFrame(loop); return; }
+
+    const dt = Math.min(ts - game.lastTime, 40); // ms, cap
+    game.lastTime = ts;
+
+    // increase difficulty gradually
+    game.speedMultiplier += 0.00012 * dt; // slowly increase
+
+    // spawn logic
+    game.spawnTimer += dt;
+    if(game.spawnTimer > game.spawnInterval){
+      game.spawnTimer = 0;
+      game.spawnInterval = 800 + Math.random()*900; // randomize interval
+      game.obstacles.push(spawnObstacle());
+    }
+
+    // update
+    game.turtle.update();
+    for(let i = game.obstacles.length -1; i>=0; i--){
+      const o = game.obstacles[i];
+      o.speed = game.baseSpeed * game.speedMultiplier; o.update(dt);
+      if(o.offscreen()){ game.obstacles.splice(i,1); game.score += 1; }
+      if(o.collides(game.turtle)) { game.gameOver = true; game.running = false; }
+    }
+
+    // draw
+    draw();
+
+    updateUI();
+
+    if(!game.running && game.gameOver){ // show game over
+      drawGameOver();
+      return;
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    // sky gradient already via canvas background style
+
+    // ground
+    ctx.fillStyle = '#4a4a4a'; ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+    // dashed line
+    ctx.strokeStyle = '#2c2c2c'; ctx.lineWidth = 2; ctx.beginPath();
+    for(let x=0;x<canvas.width;x+=20){ ctx.moveTo(x, groundY+6); ctx.lineTo(x+10, groundY+6); }
+    ctx.stroke();
+
+    // turtle
+    game.turtle.draw(ctx);
+
+    // obstacles
+    game.obstacles.forEach(o => o.draw(ctx));
+
+    // score
+    ctx.fillStyle = '#333'; ctx.font = '16px sans-serif'; ctx.fillText('Score: ' + Math.floor(game.score), canvas.width - 120, 28);
+  }
+
+  function drawGameOver(){
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#fff'; ctx.font = '28px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('انتهت اللعبة', canvas.width/2, canvas.height/2 - 6);
+    ctx.font = '16px sans-serif'; ctx.fillText('اضغط ابدأ لإعادة اللعب', canvas.width/2, canvas.height/2 + 18);
+    ctx.textAlign = 'start';
+  }
+
+  // controls
+  function onKey(e){ if(e.code === 'Space' || e.code === 'ArrowUp'){ e.preventDefault(); game.turtle.jump(); }}
+  function onPointer(){ if(!game.running){ startGame(); } else { game.turtle.jump(); }}
+
+  // touch friendly: full canvas pointer
+  canvas.addEventListener('pointerdown', onPointer);
+  window.addEventListener('keydown', onKey);
+
+  // start/pause handlers
+  function startGame(){
+    if(game && game.running) return;
+    if(!game) reset();
+    game.running = true; game.paused = false; game.gameOver = false; game.lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
+  function togglePause(){ if(!game) return; game.paused = !game.paused; }
+
+  startBtn.addEventListener('click', ()=>{ reset(); startGame(); });
+  pauseBtn.addEventListener('click', ()=>{ togglePause(); });
+
+  // responsive canvas
+  function fitCanvas(){ const ratio = 800/260; const maxW = Math.min(window.innerWidth*0.62, 900); const w = Math.max(420, maxW); canvas.width = Math.floor(w); canvas.height = Math.floor(w/ratio); }
+  window.addEventListener('resize', ()=>{ fitCanvas(); });
+
+  // initialize
+  reset(); fitCanvas(); draw();
+  </script>
+</body>
+</html>
