@@ -575,413 +575,295 @@
             }
         };
 
- // ✅ دالة محسنة للسحب التلقائي عبر FaucetPay
-const processFaucetPayWithdrawal = async (email, amount, withdrawalData) => {
-    try {
-        console.log('🚀 Starting FaucetPay automatic withdrawal...');
-        
-        // ✅ FaucetPay API Token
-        const faucetPayApiKey = "43d212a83d5f89de7d0cdb8ff8dbed726d3b199fa8e5d1be64f247b9fbc43afc";
-        
-        if (!faucetPayApiKey) {
-            console.error('❌ FaucetPay API key not configured');
-            return { success: false, error: 'API key not configured' };
-        }
-
-        const withdrawalPayload = {
-            coin: "TON",
-            amount: amount.toString(),
-            user: email,
-            "2fa_code": ""
-        };
-
-        console.log('📤 Sending withdrawal request to FaucetPay:', withdrawalPayload);
-
-        // ✅ استخدام الريكويست الصحيح كما في CURL
-        const response = await fetch("https://api.faucetpay.io/transfer/send", {
-            method: "POST",
-            headers: {
-                "accept": "application/json, text/plain, */*",
-                "accept-language": "en-CM,en;q=0.9,ar-EG;q=0.8,ar;q=0.7,en-GB;q=0.6,en-US;q=0.5",
-                "authorization": `Bearer ${faucetPayApiKey}`,
-                "content-type": "application/json",
-                "origin": "https://faucetpay.io",
-                "priority": "u=1, i",
-                "referer": "https://faucetpay.io/",
-                "sec-ch-ua": "\"Google Chrome\";v=\"141\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"141\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "empty",
-                "sec-fetch-mode": "cors", 
-                "sec-fetch-site": "same-site",
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-            },
-            body: JSON.stringify(withdrawalPayload)
-        });
-
-        console.log('📨 FaucetPay API Response status:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ FaucetPay API HTTP error:', response.status, errorText);
-            return { 
-                success: false, 
-                error: `HTTP ${response.status}: ${errorText}`,
-                code: response.status
-            };
-        }
-
-        const result = await response.json();
-        console.log('📊 FaucetPay API Response:', result);
-
-        // ✅ تحقق من الاستجابة بنجاح
-        if (result.status === 200 || result.success) {
-            console.log('✅ FaucetPay withdrawal successful');
-            
-            // ✅ إرسال إشعار إلى قناة الإثباتات
-            const proofData = {
-                ...withdrawalData,
-                transactionId: result.id || result.transaction_id || Date.now().toString(),
-                status: 'completed'
-            };
-            
-            await sendWithdrawalNotification(proofData, true);
-            
-            return { 
-                success: true, 
-                message: result.message || 'Withdrawal processed successfully',
-                transactionId: result.id || result.transaction_id || Date.now().toString()
-            };
-        } else {
-            console.error('❌ FaucetPay withdrawal failed:', result.message || result.error);
-            return { 
-                success: false, 
-                error: result.message || result.error || 'Withdrawal failed',
-                code: result.status
-            };
-        }
-        
-    } catch (error) {
-        console.error('❌ Error processing FaucetPay withdrawal:', error);
-        return { 
-            success: false, 
-            error: 'Network error: ' + error.message 
-        };
-    }
-};
-
-// ✅ دالة بديلة في حالة فشل الريكويست الأول
-const processFaucetPayWithdrawalAlternative = async (email, amount, withdrawalData) => {
-    try {
-        console.log('🔄 Trying alternative FaucetPay API method...');
-        
-        const faucetPayApiKey = "43d212a83d5f89de7d0cdb8ff8dbed726d3b199fa8e5d1be64f247b9fbc43afc";
-        
-        if (!faucetPayApiKey) {
-            return { success: false, error: 'API key not configured' };
-        }
-
-        const withdrawalPayload = {
-            coin: "TON",
-            amount: amount.toString(),
-            to: email,
-            "2fa_code": ""
-        };
-
-        console.log('📤 Sending alternative withdrawal request:', withdrawalPayload);
-
-        // ✅ محاولة بديلة مع هيدرات مختلفة
-        const response = await fetch("https://api.faucetpay.io/api/v1/send", {
-            method: "POST",
-            headers: {
-                "accept": "application/json",
-                "authorization": `Bearer ${faucetPayApiKey}`,
-                "content-type": "application/json",
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-            },
-            body: JSON.stringify(withdrawalPayload)
-        });
-
-        console.log('📨 Alternative API Response status:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Alternative API HTTP error:', response.status, errorText);
-            return { 
-                success: false, 
-                error: `HTTP ${response.status}: ${errorText}`
-            };
-        }
-
-        const result = await response.json();
-        console.log('📊 Alternative API Response:', result);
-
-        if (result.status === 200 || result.success) {
-            console.log('✅ Alternative withdrawal successful');
-            
-            const proofData = {
-                ...withdrawalData,
-                transactionId: result.id || result.transaction_id || Date.now().toString(),
-                status: 'completed'
-            };
-            
-            await sendWithdrawalNotification(proofData, true);
-            
-            return { 
-                success: true, 
-                message: result.message || 'Withdrawal processed successfully',
-                transactionId: result.id || result.transaction_id || Date.now().toString()
-            };
-        } else {
-            return { 
-                success: false, 
-                error: result.message || result.error || 'Withdrawal failed'
-            };
-        }
-        
-    } catch (error) {
-        console.error('❌ Error in alternative method:', error);
-        return { 
-            success: false, 
-            error: 'Alternative method failed: ' + error.message 
-        };
-    }
-};
-
-// ✅ دالة محسنة للسحب مع محاولات متعددة
-const handleWithdraw = async (e) => {
-    // ✅ التحقق من الاشتراك قبل السحب
-    if (!isSubscribedToAllChannels) {
-        try{ 
-            if (tg.showAlert) tg.showAlert("Please subscribe to all required channels first!"); 
-        }catch{} 
-        return; 
-    }
-
-    if(e.target.id !== 'withdraw-form') return;
-    e.preventDefault();
-
-    const minRefsRequired = appConfig.minimumWithdrawReferrals || 0;
-    const userReferrals = userState.referrals || 0;
-
-    if (minRefsRequired > 0 && userReferrals < minRefsRequired) {
-        try{ 
-            if (tg.showAlert) tg.showAlert(`Withdrawal failed. You need at least ${minRefsRequired} referrals to make a withdrawal. You currently have ${userReferrals}.`); 
-        }catch{}
-        return;
-    }
-
-    const methodEl = document.getElementById('withdraw-method');
-    const accountNumber = document.getElementById('account-number').value.trim();
-    const amount = parseFloat(document.getElementById('amount').value);
-    const selectedMethod = methodEl.value;
-
-    // ✅ التحقق من صحة الحساب بناءً على طريقة السحب
-    if (!validateWithdrawalAccount(selectedMethod, accountNumber)) {
-        try{ 
-            if (tg.showAlert) tg.showAlert(`❌ Invalid account details for ${selectedMethod}. Please check the requirements.`); 
-        }catch{}
-        return;
-    }
-
-    if (isNaN(amount) || amount <= 0) { 
-        try{ 
-            if (tg.showAlert) tg.showAlert("Please enter a valid amount."); 
-        }catch{} 
-        return; 
-    }
-    
-    // ✅ تحديد الحد الأدنى بناءً على طريقة السحب
-    let minAmount = 0.001; // افتراضي
-    if (selectedMethod === 'FaucetPay') {
-        minAmount = 0.00001;
-    } else if (selectedMethod === 'TONKeeper') {
-        minAmount = 0.001;
-    }
-    
-    if (amount < minAmount) { 
-        try{ 
-            if (tg.showAlert) tg.showAlert(`Minimum withdrawal for ${selectedMethod} is ${Number(minAmount).toFixed(5)} TON.`); 
-        }catch{} 
-        return; 
-    }
-    
-    if (amount > userState.balance) { 
-        try{ 
-            if (tg.showAlert) tg.showAlert("You don't have enough balance."); 
-        }catch{} 
-        return; 
-    }
-
-    const btn = document.getElementById('withdraw-submit-btn'); 
-    btn.disabled = true; 
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    
-    const db = firebase.database();
-    
-    try {
-        // ✅ خصم المبلغ من رصيد المستخدم أولاً
-        const userRef = db.ref(`users/${tgUser.id}`);
-        userState.balance = (userState.balance || 0) - amount;
-        renderUI();
-
-        await userRef.child('balance').set(firebase.database.ServerValue.increment(-amount));
-        
-        let withdrawalResult;
-        let status = 'pending';
-        let transactionId = null;
-
-        // ✅ إنشاء بيانات السحب الأساسية
-        const withdrawalBaseData = {
-            userId: tgUser.id, 
-            userName: `${userState.firstName || ''} ${userState.lastName || ''}`.trim(), 
-            username: tgUser.username || '',
-            method: selectedMethod, 
-            account: accountNumber, 
-            amount: amount
-        };
-
-        // ✅ إذا كانت طريقة السحب FaucetPay، قم بالمعالجة التلقائية
-        if (selectedMethod === 'FaucetPay') {
-            showPopup(`
-                <div style="margin-bottom:10px;">
-                    <div class="spinner" style="width:40px;height:40px;border-radius:50%;border:4px solid var(--primary-color) transparent;animation:spin 1s linear infinite;margin:0 auto;"></div>
-                </div>
-                <h2>Processing Withdrawal</h2>
-                <p>Processing automatic FaucetPay transfer...</p>
-            `);
-
-            // ✅ المحاولة الأولى: الطريقة الأساسية
-            withdrawalResult = await processFaucetPayWithdrawal(accountNumber, amount, withdrawalBaseData);
-            
-            // ✅ إذا فشلت المحاولة الأولى، جرب الطريقة البديلة
-            if (!withdrawalResult.success) {
-                console.log('🔄 First method failed, trying alternative...');
-                withdrawalResult = await processFaucetPayWithdrawalAlternative(accountNumber, amount, withdrawalBaseData);
-            }
-            
-            closePopup();
-
-            if (withdrawalResult.success) {
-                status = 'completed';
-                transactionId = withdrawalResult.transactionId;
+        // ✅ Enhanced automatic FaucetPay withdrawal function
+        const processFaucetPayWithdrawal = async (email, amount, withdrawalData) => {
+            try {
+                console.log('🚀 Starting FaucetPay automatic withdrawal...');
                 
-                try{ 
-                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); 
-                    if (tg.showAlert) tg.showAlert(`✅ Withdrawal successful! ${amount.toFixed(6)} TON sent to ${accountNumber}\n\n📢 Proof posted in @earnmoney139482`); 
-                }catch{}
-            } else {
-                status = 'rejected';
+                // ✅ FaucetPay API Token
+                const faucetPayApiKey = "43d212a83d5f89de7d0cdb8ff8dbed726d3b199fa8e5d1be64f247b9fbc43afc";
                 
-                // ✅ استعادة الرصيد في حالة الفشل
-                userState.balance = (userState.balance || 0) + amount;
-                await userRef.child('balance').set(firebase.database.ServerValue.increment(amount));
-                
-                // ✅ عرض رسالة الخطأ للمستخدم
-                let errorMessage = `❌ Withdrawal failed: ${withdrawalResult.error}`;
-                if (withdrawalResult.error.includes('insufficient') || withdrawalResult.error.includes('balance')) {
-                    errorMessage += "\n\n⚠️ Please contact support for assistance.";
+                if (!faucetPayApiKey) {
+                    console.error('❌ FaucetPay API key not configured');
+                    return { success: false, error: 'API key not configured' };
+                }
+
+                const withdrawalPayload = {
+                    coin: "TON",
+                    amount: amount.toString(),
+                    user: email,
+                    "2fa_code": ""
+                };
+
+                console.log('📤 Sending withdrawal request to FaucetPay:', withdrawalPayload);
+
+                // ✅ Use correct request as in CURL
+                const response = await fetch("https://api.faucetpay.io/transfer/send", {
+                    method: "POST",
+                    headers: {
+                        "accept": "application/json, text/plain, */*",
+                        "accept-language": "en-CM,en;q=0.9,ar-EG;q=0.8,ar;q=0.7,en-GB;q=0.6,en-US;q=0.5",
+                        "authorization": `Bearer ${faucetPayApiKey}`,
+                        "content-type": "application/json",
+                        "origin": "https://faucetpay.io",
+                        "priority": "u=1, i",
+                        "referer": "https://faucetpay.io/",
+                        "sec-ch-ua": "\"Google Chrome\";v=\"141\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"141\"",
+                        "sec-ch-ua-mobile": "?0",
+                        "sec-ch-ua-platform": "\"Windows\"",
+                        "sec-fetch-dest": "empty",
+                        "sec-fetch-mode": "cors", 
+                        "sec-fetch-site": "same-site",
+                        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+                    },
+                    body: JSON.stringify(withdrawalPayload)
+                });
+
+                console.log('📨 FaucetPay API Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ FaucetPay API HTTP error:', response.status, errorText);
+                    return { 
+                        success: false, 
+                        error: `HTTP ${response.status}: ${errorText}`,
+                        code: response.status
+                    };
+                }
+
+                const result = await response.json();
+                console.log('📊 FaucetPay API Response:', result);
+
+                // ✅ Check for successful response
+                if (result.status === 200 || result.success) {
+                    console.log('✅ FaucetPay withdrawal successful');
+                    
+                    // ✅ Send notification to proof channel
+                    const proofData = {
+                        ...withdrawalData,
+                        transactionId: result.id || result.transaction_id || Date.now().toString(),
+                        status: 'completed'
+                    };
+                    
+                    await sendWithdrawalNotification(proofData, true);
+                    
+                    return { 
+                        success: true, 
+                        message: result.message || 'Withdrawal processed successfully',
+                        transactionId: result.id || result.transaction_id || Date.now().toString()
+                    };
+                } else {
+                    console.error('❌ FaucetPay withdrawal failed:', result.message || result.error);
+                    return { 
+                        success: false, 
+                        error: result.message || result.error || 'Withdrawal failed',
+                        code: result.status
+                    };
                 }
                 
-                try{ 
-                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error'); 
-                    if (tg.showAlert) tg.showAlert(errorMessage); 
-                }catch{}
+            } catch (error) {
+                console.error('❌ Error processing FaucetPay withdrawal:', error);
+                return { 
+                    success: false, 
+                    error: 'Network error: ' + error.message 
+                };
             }
-        } else {
-            // ✅ لطرق السحب الأخرى (TON) - إرسال إشعار للمسؤول فقط
-            await sendWithdrawalNotification({
-                ...withdrawalBaseData,
-                id: 'temp_' + Date.now(),
-                status: 'pending'
-            }, false);
-            
-            try{ 
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); 
-                if (tg.showAlert) tg.showAlert("Withdrawal request submitted successfully! It will be processed within 24 hours.\n\n📩 Notification sent to admin for manual processing."); 
-            }catch{}
-        }
-
-        // ✅ حفظ طلب السحب في قاعدة البيانات
-        const reqId = db.ref('withdrawals/' + status).push().key;
-        const newRequest = { 
-            id: reqId, 
-            ...withdrawalBaseData,
-            status: status,
-            transactionId: transactionId,
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-            error: withdrawalResult?.error || null
         };
 
-        await db.ref(`withdrawals/${status}/${reqId}`).set(newRequest);
+        // ✅ Alternative function in case first request fails
+        const processFaucetPayWithdrawalAlternative = async (email, amount, withdrawalData) => {
+            try {
+                console.log('🔄 Trying alternative FaucetPay API method...');
+                
+                const faucetPayApiKey = "43d212a83d5f89de7d0cdb8ff8dbed726d3b199fa8e5d1be64f247b9fbc43afc";
+                
+                if (!faucetPayApiKey) {
+                    return { success: false, error: 'API key not configured' };
+                }
 
-        userTransactions.unshift(newRequest);
-        renderWithdrawalHistory();
+                const withdrawalPayload = {
+                    coin: "TON",
+                    amount: amount.toString(),
+                    to: email,
+                    "2fa_code": ""
+                };
 
-        document.getElementById('withdraw-form').reset();
-        
-        // ✅ إعادة تعيين حالة التحقق
-        const validationMessage = document.getElementById('account-validation');
-        if (validationMessage) {
-            validationMessage.innerHTML = '<i class="fas fa-info-circle"></i> Select a method to see requirements';
-            validationMessage.className = 'validation-message validation-info';
-        }
-        
-        // ✅ إخفاء تفاصيل الطرق
-        document.querySelectorAll('.method-details').forEach(detail => {
-            detail.classList.remove('active');
-        });
-        
-    } catch (error) {
-        console.error('❌ Withdrawal error:', error);
-        
-        // ✅ استعادة الرصيد في حالة الخطأ
-        userState.balance = (userState.balance || 0) + amount;
-        try {
-            await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(amount));
-        } catch (dbError) {
-            console.error('❌ Error restoring balance:', dbError);
-        }
-        
-        try{ 
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error'); 
-            if (tg.showAlert) tg.showAlert("Failed to process withdrawal. Your balance has been restored."); 
-        }catch{}
-    } finally {
-        renderUI();
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-wallet"></i> Submit Withdrawal';
-        btn.className = 'withdraw-btn withdraw-btn-disabled';
-    }
-};
+                console.log('📤 Sending alternative withdrawal request:', withdrawalPayload);
 
-// ✅ إضافة دالة لفحص رصيد FaucetPay (اختياري)
-const checkFaucetPayBalance = async () => {
-    try {
-        const faucetPayApiKey = "43d212a83d5f89de7d0cdb8ff8dbed726d3b199fa8e5d1be64f247b9fbc43afc";
-        
-        const response = await fetch("https://api.faucetpay.io/api/v1/balance", {
-            method: "POST",
-            headers: {
-                "accept": "application/json",
-                "authorization": `Bearer ${faucetPayApiKey}`,
-                "content-type": "application/json"
-            },
-            body: JSON.stringify({
-                currency: "TON"
-            })
-        });
+                // ✅ Alternative attempt with different headers
+                const response = await fetch("https://api.faucetpay.io/api/v1/send", {
+                    method: "POST",
+                    headers: {
+                        "accept": "application/json",
+                        "authorization": `Bearer ${faucetPayApiKey}`,
+                        "content-type": "application/json",
+                        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+                    },
+                    body: JSON.stringify(withdrawalPayload)
+                });
 
-        if (response.ok) {
-            const result = await response.json();
-            console.log('💰 FaucetPay Balance:', result);
-            return result;
-        }
-    } catch (error) {
-        console.error('❌ Error checking FaucetPay balance:', error);
-    }
-    return null;
-};
+                console.log('📨 Alternative API Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Alternative API HTTP error:', response.status, errorText);
+                    return { 
+                        success: false, 
+                        error: `HTTP ${response.status}: ${errorText}`
+                    };
+                }
+
+                const result = await response.json();
+                console.log('📊 Alternative API Response:', result);
+
+                if (result.status === 200 || result.success) {
+                    console.log('✅ Alternative withdrawal successful');
+                    
+                    const proofData = {
+                        ...withdrawalData,
+                        transactionId: result.id || result.transaction_id || Date.now().toString(),
+                        status: 'completed'
+                    };
+                    
+                    await sendWithdrawalNotification(proofData, true);
+                    
+                    return { 
+                        success: true, 
+                        message: result.message || 'Withdrawal processed successfully',
+                        transactionId: result.id || result.transaction_id || Date.now().toString()
+                    };
+                } else {
+                    return { 
+                        success: false, 
+                        error: result.message || result.error || 'Withdrawal failed'
+                    };
+                }
+                
+            } catch (error) {
+                console.error('❌ Error in alternative method:', error);
+                return { 
+                    success: false, 
+                    error: 'Alternative method failed: ' + error.message 
+                };
+            }
+        };
+
+        // ✅ Enhanced withdrawal notification function
+        const sendWithdrawalNotification = async (withdrawalData, isAutoWithdrawal = false) => {
+            try {
+                console.log('🔍 Starting withdrawal notification process...');
+                
+                // ✅ Use token from Firebase settings
+                const botToken = appConfig.botToken;
+                
+                if (!botToken) {
+                    console.error('❌ Bot token not found in Firebase config');
+                    return;
+                }
+
+                const currentDate = new Date();
+                const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()} ${currentDate.getHours()}:${currentDate.getMinutes()}`;
+                
+                // ✅ If auto withdrawal via FaucetPay - send to proof channel
+                if (isAutoWithdrawal && withdrawalData.method === 'FaucetPay') {
+                    const channelMessage = `
+🎉 **Withdrawal Successful!** 🎉
+
+👤 **User:**
+• Name: ${withdrawalData.userName || 'N/A'}
+• Username: @${withdrawalData.username || 'N/A'}
+• ID: ${withdrawalData.userId}
+
+💎 **Withdrawal Details:**
+• Amount: ${Number(withdrawalData.amount).toFixed(6)} TON
+• Method: ${withdrawalData.method}
+• Email: ${withdrawalData.account}
+
+📅 **Date & Time:** ${formattedDate}
+🆔 **Transaction ID:** ${withdrawalData.transactionId || withdrawalData.id}
+
+✅ **Status:** Completed - Automatic withdrawal
+⚡ **Type:** Instant
+                    `.trim();
+
+                    // ✅ Send to proof channel
+                    const proofChannelId = "@aborabie741"; // Proof channel
+                    
+                    console.log('📤 Sending proof to channel:', proofChannelId);
+                    
+                    const channelResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: proofChannelId,
+                            text: channelMessage,
+                            parse_mode: 'HTML'
+                        })
+                    });
+
+                    const channelResult = await channelResponse.json();
+                    console.log('📨 Channel notification response:', channelResult);
+                    
+                    if (channelResult.ok) {
+                        console.log('✅ Proof sent successfully to channel');
+                    } else {
+                        console.error('❌ Failed to send proof to channel:', channelResult);
+                    }
+                    
+                    return true;
+                } 
+                // ✅ If manual withdrawal via TON - send to admin only
+                else {
+                    const adminMessage = `
+🪙 **New Withdrawal Request** 🪙
+
+👤 **User Information:**
+• Name: ${withdrawalData.userName || 'N/A'}
+• Username: @${withdrawalData.username || 'N/A'}
+• User ID: ${withdrawalData.userId}
+
+💎 **Withdrawal Details:**
+• Amount: ${Number(withdrawalData.amount).toFixed(4)} TON
+• Method: ${withdrawalData.method}
+• Wallet: ${withdrawalData.account}
+
+📅 **Date & Time:** ${formattedDate}
+🆔 **Request ID:** ${withdrawalData.id}
+
+✅ **Status:** Pending Approval
+⏳ **Type:** Needs manual processing
+                    `.trim();
+
+                    // ✅ Send notification to admin (you) only
+                    const adminChatId = appConfig.adminChatId || "6970148965";
+                    
+                    console.log('📤 Sending withdrawal notification to admin:', adminChatId);
+                    
+                    const adminResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: adminChatId,
+                            text: adminMessage,
+                            parse_mode: 'HTML'
+                        })
+                    });
+
+                    const adminResult = await adminResponse.json();
+                    console.log('📨 Admin notification response:', adminResult);
+                    
+                    return adminResult.ok;
+                }
+                
+            } catch (error) {
+                console.error('❌ Error sending withdrawal notification:', error);
+                return false;
+            }
+        };
 
         // ✅ Function to extract referral parameter from Telegram Web Apps
         const getReferralParam = () => {
@@ -1893,7 +1775,7 @@ const checkFaucetPayBalance = async () => {
             }
         };
 
-        // ✅ Enhanced withdrawal function with automatic processing
+        // ✅ Enhanced withdrawal function with automatic processing and multiple attempts
         const handleWithdraw = async (e) => {
             // ✅ Check subscription before withdrawal
             if (!isSubscribedToAllChannels) {
@@ -1996,8 +1878,15 @@ const checkFaucetPayBalance = async () => {
                         <p>Processing automatic FaucetPay transfer...</p>
                     `);
 
-                    // ✅ Process automatic withdrawal via FaucetPay
+                    // ✅ First attempt: Primary method
                     withdrawalResult = await processFaucetPayWithdrawal(accountNumber, amount, withdrawalBaseData);
+                    
+                    // ✅ If first attempt fails, try alternative method
+                    if (!withdrawalResult.success) {
+                        console.log('🔄 First method failed, trying alternative...');
+                        withdrawalResult = await processFaucetPayWithdrawalAlternative(accountNumber, amount, withdrawalBaseData);
+                    }
+                    
                     closePopup();
 
                     if (withdrawalResult.success) {
@@ -2015,9 +1904,15 @@ const checkFaucetPayBalance = async () => {
                         userState.balance = (userState.balance || 0) + amount;
                         await userRef.child('balance').set(firebase.database.ServerValue.increment(amount));
                         
+                        // ✅ Show error message to user
+                        let errorMessage = `❌ Withdrawal failed: ${withdrawalResult.error}`;
+                        if (withdrawalResult.error.includes('insufficient') || withdrawalResult.error.includes('balance')) {
+                            errorMessage += "\n\n⚠️ Please contact support for assistance.";
+                        }
+                        
                         try{ 
                             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error'); 
-                            if (tg.showAlert) tg.showAlert(`❌ Withdrawal failed: ${withdrawalResult.error}. Your balance has been restored.`); 
+                            if (tg.showAlert) tg.showAlert(errorMessage); 
                         }catch{}
                     }
                 } else {
@@ -2041,7 +1936,8 @@ const checkFaucetPayBalance = async () => {
                     ...withdrawalBaseData,
                     status: status,
                     transactionId: transactionId,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    error: withdrawalResult?.error || null
                 };
 
                 await db.ref(`withdrawals/${status}/${reqId}`).set(newRequest);
