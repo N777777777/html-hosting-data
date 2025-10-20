@@ -139,6 +139,173 @@
             background: rgba(231, 76, 60, 0.1);
             text-align: center;
         }
+
+        /* أنماط محسنة لواجهة السحب */
+        .withdraw-container {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid;
+        }
+        .light-theme .withdraw-container { 
+            background-color: var(--surface-light); 
+            border-color: var(--border-light); 
+        }
+        .dark-theme .withdraw-container { 
+            background-color: var(--surface-dark); 
+            border-color: var(--border-dark); 
+        }
+        
+        .withdraw-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .withdraw-header i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .withdraw-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .input-with-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 12px;
+            color: var(--text-secondary-light);
+            z-index: 1;
+        }
+        
+        .dark-theme .input-with-icon i {
+            color: var(--text-secondary-dark);
+        }
+        
+        .input-with-icon input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border-radius: 8px;
+            border: 1px solid;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .light-theme .input-with-icon input { 
+            border-color: var(--border-light); 
+            background-color: var(--surface-light);
+        }
+        .dark-theme .input-with-icon input { 
+            border-color: var(--border-dark); 
+            background-color: var(--surface-dark);
+        }
+        
+        .input-with-icon input:focus {
+            outline: none;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+        }
+        
+        .validation-message {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .validation-success {
+            color: var(--success);
+        }
+        
+        .validation-error {
+            color: var(--danger);
+        }
+        
+        .validation-info {
+            color: var(--text-secondary-light);
+        }
+        
+        .dark-theme .validation-info {
+            color: var(--text-secondary-dark);
+        }
+        
+        .example-addresses {
+            font-size: 0.75rem;
+            margin-top: 8px;
+            opacity: 0.7;
+            font-family: monospace;
+        }
+        
+        .withdraw-amount-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .withdraw-amount-info span:last-child {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .withdraw-btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .withdraw-btn-enabled {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .withdraw-btn-disabled {
+            background: #808B96;
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        .referral-notice {
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(231, 76, 60, 0.1);
+        }
     </style>
 </head>
 <body class="dark-theme">
@@ -211,7 +378,8 @@
                 <div id="earning-board" style="display: none;"><ul class="leaderboard-list" id="earning-leaderboard-list"></ul></div>
             </div>
             <div id="profile-page" class="page">
-                <div id="referral-section"></div><div id="withdraw-section"></div>
+                <div id="referral-section"></div>
+                <div id="withdraw-section"></div>
                 <div id="withdrawal-history-section" style="margin-top: 20px;">
                     <h2>Withdrawal History</h2><div id="withdrawal-history-list"></div>
                 </div>
@@ -233,22 +401,20 @@
     document.addEventListener('DOMContentLoaded', () => {
         const tg = window.Telegram?.WebApp || {};
         const firebaseConfig = {
-            apiKey: "AIzaSyAk909CcFWn4ZMeBEM1yxRbQbW9w6UNo58",
-            authDomain: "earn-money-c3bad.firebaseapp.com",
-            databaseURL: "https://earn-money-c3bad-default-rtdb.firebaseio.com",
-            projectId: "earn-money-c3bad",
-            storageBucket: "earn-money-c3bad.firebasestorage.app",
-            messagingSenderId: "1022688566011",
-            appId: "1:1022688566011:web:690f6faa19dd3337a2ee5e"
+            apiKey: "AIzaSyC5dwRaz3L-aK7I5CoPkbB31MzXB62lgrU",
+            authDomain: "earnmoney124553.firebaseapp.com",
+            databaseURL: "https://earnmoney124553-default-rtdb.firebaseio.com",
+            projectId: "earnmoney124553",
+            storageBucket: "earnmoney124553.firebasestorage.app",
+            messagingSenderId: "325528918523",
+            appId: "1:325528918523:web:73d84f48a24c1e0cbfd35e"
         };
 
-        // ✅ إعدادات إشعارات السحب
-        const WITHDRAWAL_NOTIFICATION_BOT_TOKEN = "8371336266:AAGeJ6iozisWnkkCmoTsPDt8RYoOgkvhroY";
         const NOTIFICATION_USERNAME = "aborabie777";
 
         // ✅ متغيرات جديدة للحماية من الأوتو كليكر (تم إزالة Cooldown)
         let lastAdWatchTime = 0;
-        const MIN_AD_DURATION = 5000; // 5 ثواني حد أدنى لمشاهدة الإعلان
+        const MIN_AD_DURATION = 15000; // 15 ثواني حد أدنى لمشاهدة الإعلان
         let adStartTime = 0;
         let isAdInProgress = false;
         let adWatchTimer = null;
@@ -258,30 +424,30 @@
         let userTransactions = [];
         let isSubscribedToAllChannels = false;
 
-// ✅ قائمة القنوات المطلوبة للاشتراك
-const requiredChannels = [
-    {
-        id: 'earnmoney174688',
-        name: 'Earn Money Public',
-        username: 'earnmoney174688',
-        url: 'https://t.me/earnmoney174688',
-        icon: 'https://img.icons8.com/ios-filled/100/group.png'
-    },
-    {
-        id: 'earnmoney139482',
-        name: 'Earn Money Withdrawals',
-        username: 'earnmoney139482', 
-        url: 'https://t.me/earnmoney139482',
-        icon: 'https://img.icons8.com/ios-filled/100/money-bag.png'
-    },
-    {
-        id: 'earnmoneywithredone',
-        name: 'Earn Money With Redone',
-        username: 'EarnMoneyWithRedone',
-        url: 'https://t.me/EarnMoneyWithRedone',
-        icon: 'https://img.icons8.com/ios-filled/100/rocket.png'
-    }
-];
+        // ✅ قائمة القنوات المطلوبة للاشتراك
+        const requiredChannels = [
+            {
+                id: 'earnmoney174688',
+                name: 'Earn Money Public',
+                username: 'earnmoney174688',
+                url: 'https://t.me/earnmoney174688',
+                icon: 'https://img.icons8.com/ios-filled/100/group.png'
+            },
+            {
+                id: 'earnmoney139482',
+                name: 'Earn Money Withdrawals',
+                username: 'earnmoney139482', 
+                url: 'https://t.me/earnmoney139482',
+                icon: 'https://img.icons8.com/ios-filled/100/money-bag.png'
+            },
+            {
+                id: 'earnmoneywithredone',
+                name: 'Earn Money With Redone',
+                username: 'EarnMoneyWithRedone',
+                url: 'https://t.me/EarnMoneyWithRedone',
+                icon: 'https://img.icons8.com/ios-filled/100/rocket.png'
+            }
+        ];
 
         const popup = document.getElementById('popup');
         const popupBody = document.getElementById('popup-body');
@@ -291,62 +457,106 @@ const requiredChannels = [
         const closePopup = () => { popup.style.display = 'none'; };
         const updateProgress = (percentage) => { loadingProgress.textContent = `${percentage}%`; };
 
-        // ✅ دالة جديدة لإرسال إشعار السحب
-        const sendWithdrawalNotification = async (withdrawalData) => {
-            try {
-                const currentDate = new Date();
-                const formattedDate = `${currentDate.getDate()} / ${currentDate.getMonth() + 1} / ${currentDate.getFullYear()}`;
-                
-                const message = `
-📢 Official Withdrawal Proof from Earn Money Bot 💸
-📆 Date: ${formattedDate}
-👤 Account Owner: ${withdrawalData.userName}
-📨 Telegram Username: @${withdrawalData.username || 'N/A'}
-💳 Wallet Address: ${withdrawalData.account}
-💰 Withdrawn Amount: ${Number(withdrawalData.amount).toFixed(3)} TON
-🆔 User ID: ${withdrawalData.userId}
-                `.trim();
+        // ✅ دالة للتحقق من صحة عنوان TON فقط للعناوين التي تبدأ بـ UQ, EQ, أو kQ
+        const isValidTONAddress = (address) => {
+            if (!address || typeof address !== 'string') return false;
+            
+            // تنظيف العنوان من المسافات
+            const cleanAddress = address.trim();
+            
+            // يجب أن يبدأ بـ UQ, EQ, أو kQ فقط
+            const validPrefixes = ['UQ', 'EQ', 'kQ'];
+            const hasValidPrefix = validPrefixes.some(prefix => cleanAddress.startsWith(prefix));
+            if (!hasValidPrefix) return false;
+            
+            // يجب أن يحتوي على أحرف وأرقام فقط (باستثناء البادئة)
+            const addressWithoutPrefix = cleanAddress.substring(2);
+            const validChars = /^[A-Za-z0-9]+$/;
+            if (!validChars.test(addressWithoutPrefix)) return false;
+            
+            // يجب أن يكون الطول مناسب (عادة 48 حرف بعد البادئة)
+            if (addressWithoutPrefix.length < 40 || addressWithoutPrefix.length > 50) return false;
+            
+            return true;
+        };
 
-                // إرسال الرسالة عبر Bot API إلى اليوزر مباشرة
-                const response = await fetch(`https://api.telegram.org/bot${WITHDRAWAL_NOTIFICATION_BOT_TOKEN}/sendMessage`, {
+// ✅ دالة محسنة لإرسال إشعار السحب للمسؤول فقط (بدون إرسال للمستخدم)
+const sendWithdrawalNotification = async (withdrawalData) => {
+    try {
+        // ✅ استخدام التوكن من إعدادات Firebase
+        const botToken = appConfig.botToken;
+        
+        if (!botToken) {
+            console.error('❌ Bot token not found in Firebase config');
+            return;
+        }
+
+        const currentDate = new Date();
+        const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()} ${currentDate.getHours()}:${currentDate.getMinutes()}`;
+        
+        // ✅ رسالة مفصلة للإشعار للمسؤول
+        const adminMessage = `
+💰 *NEW WITHDRAWAL REQUEST* 💰
+
+👤 *User Information:*
+• Name: ${withdrawalData.userName || 'N/A'}
+• Username: @${withdrawalData.username || 'N/A'}
+• User ID: \`${withdrawalData.userId}\`
+
+💳 *Withdrawal Details:*
+• Amount: ${Number(withdrawalData.amount).toFixed(4)} TON
+• Method: ${withdrawalData.method}
+• Wallet: \`${withdrawalData.account}\`
+
+📅 *Date & Time:* ${formattedDate}
+🆔 *Request ID:* ${withdrawalData.id}
+
+✅ *Status:* Pending Approval
+        `.trim();
+
+        // ✅ إرسال الإشعار للمسؤول (أنت) فقط
+        const adminChatId = appConfig.adminChatId || "6970148965";
+        
+        console.log('📤 Sending withdrawal notification to admin:', adminChatId);
+        
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                chat_id: adminChatId,
+                text: adminMessage,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        const result = await response.json();
+        if (result.ok) {
+            console.log('✅ Withdrawal notification sent successfully to admin');
+        } else {
+            console.error('❌ Failed to send withdrawal notification to admin:', result);
+            
+            // ✅ محاولة بديلة: إرسال كرسالة عادية إذا فشلت Markdown
+            if (result.description && result.description.includes('Markdown')) {
+                console.log('🔄 Trying without Markdown...');
+                await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        chat_id: `@${NOTIFICATION_USERNAME}`,
-                        text: message,
-                        parse_mode: 'HTML'
+                        chat_id: adminChatId,
+                        text: adminMessage.replace(/\*/g, '🔸'), // إزالة علامات Markdown
                     })
                 });
-
-                const result = await response.json();
-                if (result.ok) {
-                    console.log('✅ Withdrawal notification sent successfully to', `@${NOTIFICATION_USERNAME}`);
-                } else {
-                    console.error('❌ Failed to send withdrawal notification:', result);
-                    
-                    // محاولة بديلة: إرسال إلى معرف المستخدم إذا كان متاحاً
-                    if (tgUser && tgUser.id) {
-                        console.log('🔄 Trying to send to user ID instead...');
-                        await fetch(`https://api.telegram.org/bot${WITHDRAWAL_NOTIFICATION_BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                chat_id: tgUser.id,
-                                text: message,
-                                parse_mode: 'HTML'
-                            })
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Error sending withdrawal notification:', error);
             }
-        };
-
+        }
+        
+    } catch (error) {
+        console.error('❌ Error sending withdrawal notification:', error);
+    }
+};
         // ✅ دالة جديدة لاستخراج معامل الإحالة من تطبيقات ويب تليجرام
         const getReferralParam = () => {
             try {
@@ -382,7 +592,7 @@ const requiredChannels = [
             }
         };
 
-        // ✅ دالة محسنة للتحقق من الاشتراك في القنوات باستخدام Bot API
+        // ✅ دالة محسنة للتحقق من الاشتراك في القنوات باستخدام Bot API - تستخدم التوكن من Firebase
         const checkRealSubscription = async (channelUsername) => {
             try {
                 if (!tgUser || !tgUser.id) {
@@ -390,11 +600,11 @@ const requiredChannels = [
                     return false;
                 }
 
-                // استخدام التوكن الحقيقي للبوت
-                const botToken = "8371336266:AAGeJ6iozisWnkkCmoTsPDt8RYoOgkvhroY";
+                // ✅ استخدام التوكن من إعدادات Firebase
+                const botToken = appConfig.botToken;
                 
                 if (!botToken) {
-                    console.error('❌ Bot token not configured');
+                    console.error('❌ Bot token not configured in Firebase');
                     return false;
                 }
 
@@ -643,6 +853,13 @@ const requiredChannels = [
                 appConfig.referralBonus = appConfig.referralBonus || 0.001;
                 appConfig.botUsername = appConfig.botUsername || "Aborabie777_bot";
                 appConfig.minimumWithdrawReferrals = appConfig.minimumWithdrawReferrals || 0;
+                
+                console.log('🔧 Firebase Config Loaded:', {
+                    botToken: appConfig.botToken ? '✅ Loaded' : '❌ Missing',
+                    botUsername: appConfig.botUsername,
+                    adValue: appConfig.adValue,
+                    dailyAdLimit: appConfig.dailyAdLimit
+                });
                 
                 updateProgress(40);
 
@@ -993,7 +1210,7 @@ const requiredChannels = [
                 // ✅ التحقق من مدة المشاهدة (5 ثواني على الأقل)
                 if (adDuration < MIN_AD_DURATION) {
                     try{ 
-                        if (tg.showAlert) tg.showAlert("Ad watched too quickly! Please watch the ad for at least 5 seconds to earn rewards."); 
+                        if (tg.showAlert) tg.showAlert("Ad watched too quickly! Please watch the ad for at least 15 seconds to earn rewards."); 
                     }catch{}
                     
                     // إعادة تمكين الزر
@@ -1250,7 +1467,7 @@ const requiredChannels = [
             }
         };
 
-        // ✅ دالة محسنة للسحب مع إرسال الإشعار
+        // ✅ دالة محسنة للسحب مع التحقق الإلزامي فقط للعناوين التي تبدأ بـ UQ, EQ, أو kQ
         const handleWithdraw = async (e) => {
             // ✅ التحقق من الاشتراك قبل السحب
             if (!isSubscribedToAllChannels) {
@@ -1274,9 +1491,27 @@ const requiredChannels = [
             }
 
             const methodEl = document.getElementById('withdraw-method');
-            const accountNumber = document.getElementById('account-number').value;
+            const accountNumber = document.getElementById('account-number').value.trim();
             const amount = parseFloat(document.getElementById('amount').value);
             const selectedMethod = (appConfig.withdrawMethods || []).find(m => m.name === methodEl.value);
+
+            // ✅ التحقق الإلزامي من صحة عنوان TON فقط إذا بدأ بـ UQ, EQ, أو kQ
+            if (accountNumber && (accountNumber.startsWith('UQ') || accountNumber.startsWith('EQ') || accountNumber.startsWith('kQ'))) {
+                if (!isValidTONAddress(accountNumber)) {
+                    try{ 
+                        if (tg.showAlert) tg.showAlert("❌ Invalid TON address format. Please enter a valid TON address starting with UQ, EQ, or kQ."); 
+                    }catch{}
+                    return;
+                }
+            }
+
+            // ✅ منع السحب إذا لم يتم إدخال عنوان
+            if (!accountNumber) {
+                try{ 
+                    if (tg.showAlert) tg.showAlert("Please enter your account details."); 
+                }catch{}
+                return;
+            }
 
             if (isNaN(amount) || amount <= 0) { 
                 try{ 
@@ -1338,6 +1573,21 @@ const requiredChannels = [
                     if (tg.showAlert) tg.showAlert("Withdrawal request submitted successfully!"); 
                 }catch{}
                 document.getElementById('withdraw-form').reset();
+                
+                // ✅ إعادة تعيين حالة التحقق من العنوان
+                const validationMessage = document.getElementById('ton-address-validation');
+                if (validationMessage) {
+                    validationMessage.innerHTML = '<i class="fas fa-info-circle"></i> Enter your account details';
+                    validationMessage.className = 'validation-message validation-info';
+                }
+                
+                const withdrawBtn = document.getElementById('withdraw-submit-btn');
+                if (withdrawBtn) {
+                    withdrawBtn.disabled = true;
+                    withdrawBtn.className = 'withdraw-btn withdraw-btn-disabled';
+                    withdrawBtn.innerHTML = '<i class="fas fa-wallet"></i> Submit Withdrawal';
+                }
+                
             } catch (error) {
                 userState.balance = (userState.balance || 0) + amount;
                 try{ 
@@ -1453,6 +1703,7 @@ const requiredChannels = [
             });
         };
 
+        // ✅ دالة محسنة لعرض قسم السحب مع التحقق الإلزامي فقط للعناوين التي تبدأ بـ UQ, EQ, أو kQ
         const renderWithdrawSection = () => {
             const container = document.getElementById('withdraw-section'); 
             let optionsHtml = '';
@@ -1466,31 +1717,164 @@ const requiredChannels = [
             let referralNotice = '';
             if (minRefs > 0) {
                 referralNotice = `
-                    <p style="font-size: 0.85rem; text-align: center; margin-bottom: 15px; opacity: 0.8;">
-                        <b>Note:</b> You need at least <b>${minRefs} referrals</b> to be eligible for withdrawal.
-                    </p>`;
+                    <div class="referral-notice">
+                        <i class="fas fa-info-circle"></i> You need at least <b>${minRefs} referrals</b> to be eligible for withdrawal.
+                        <br>You currently have <b>${userState.referrals || 0} referrals</b>.
+                    </div>`;
             }
 
             container.innerHTML = `
-                <form id="withdraw-form" class="task-container" style="flex-direction: column; align-items: stretch;">
-                    <h3>Request Withdraw</h3>
+                <div class="withdraw-container">
+                    <div class="withdraw-header">
+                        <i class="fas fa-wallet"></i>
+                        <h3>Withdraw Funds</h3>
+                    </div>
+                    
                     ${referralNotice}
-                    <div class="form-group" style="width:100%">
-                        <label for="withdraw-method">Method:</label>
-                        <select id="withdraw-method" required style="width: 100%; padding: 10px; border-radius: 8px;">
-                            ${optionsHtml}
-                        </select>
-                    </div>
-                    <div class="form-group" style="width:100%">
-                        <label for="account-number">Account Number/ID:</label>
-                        <input type="text" id="account-number" required style="width: 100%; padding: 10px; border-radius: 8px;">
-                    </div>
-                    <div class="form-group" style="width:100%">
-                        <label for="amount">Amount:</label>
-                        <input type="number" step="any" id="amount" required style="width: 100%; padding: 10px; border-radius: 8px;">
-                    </div>
-                    <button type="submit" id="withdraw-submit-btn" class="action-btn">Submit Request</button>
-                </form>`;
+                    
+                    <form id="withdraw-form">
+                        <div class="form-group">
+                            <label for="withdraw-method">
+                                <i class="fas fa-credit-card"></i> Withdrawal Method:
+                            </label>
+                            <select id="withdraw-method" required style="width: 100%; padding: 12px; border-radius: 8px;">
+                                <option value="">Select a method</option>
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="account-number">
+                                <i class="fas fa-user-circle"></i> Account Details:
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-address-card"></i>
+                                <input type="text" id="account-number" placeholder="Enter your wallet address or account details" required>
+                            </div>
+                            <div id="ton-address-validation" class="validation-message validation-info">
+                                <i class="fas fa-info-circle"></i> Enter your account details
+                            </div>
+                            <div class="example-addresses">
+                                For TON wallets: UQ..., EQ..., or kQ... (must be valid format)
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="amount">
+                                <i class="fas fa-coins"></i> Amount to Withdraw (TON):
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <input type="number" step="0.001" id="amount" placeholder="0.000" min="0.001" required>
+                            </div>
+                            <div class="withdraw-amount-info">
+                                <span>Available Balance:</span>
+                                <span>${(userState.balance || 0).toFixed(4)} TON</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="withdraw-submit-btn" class="withdraw-btn withdraw-btn-disabled" disabled>
+                            <i class="fas fa-wallet"></i> Submit Withdrawal
+                        </button>
+                    </form>
+                </div>`;
+
+            // ✅ إضافة مستمع الأحداث للتحقق من عنوان TON أثناء الكتابة (فقط للعناوين التي تبدأ بـ UQ, EQ, أو kQ)
+            const accountInput = document.getElementById('account-number');
+            const methodSelect = document.getElementById('withdraw-method');
+            const amountInput = document.getElementById('amount');
+            const validationMessage = document.getElementById('ton-address-validation');
+            const withdrawBtn = document.getElementById('withdraw-submit-btn');
+
+            const validateForm = () => {
+                const method = methodSelect.value;
+                const account = accountInput.value.trim();
+                const amount = parseFloat(amountInput.value);
+                const balance = userState.balance || 0;
+                const selectedMethod = (appConfig.withdrawMethods || []).find(m => m.name === method);
+
+                let isValid = true;
+                let message = '';
+                let messageType = 'info';
+
+                // التحقق من اختيار الطريقة
+                if (!method) {
+                    isValid = false;
+                    message = 'Please select a withdrawal method';
+                    messageType = 'info';
+                }
+                // ✅ التحقق الإلزامي من عنوان TON فقط إذا بدأ بـ UQ, EQ, أو kQ
+                else if (account && (account.startsWith('UQ') || account.startsWith('EQ') || account.startsWith('kQ'))) {
+                    if (!isValidTONAddress(account)) {
+                        isValid = false;
+                        message = '❌ Invalid TON address format';
+                        messageType = 'error';
+                    } else {
+                        message = '✅ Valid TON address';
+                        messageType = 'success';
+                    }
+                }
+                // ✅ إذا لم يكن عنوان TON (لا يبدأ بـ UQ, EQ, أو kQ) - السماح بأي عنوان آخر
+                else if (account) {
+                    message = '✅ Valid account details';
+                    messageType = 'success';
+                }
+                // التحقق من إدخال العنوان
+                else if (!account) {
+                    isValid = false;
+                    message = 'Please enter account details';
+                    messageType = 'info';
+                }
+                // التحقق من المبلغ
+                else if (isNaN(amount) || amount <= 0) {
+                    isValid = false;
+                    message = 'Please enter a valid amount';
+                    messageType = 'info';
+                }
+                else if (selectedMethod && amount < selectedMethod.min) {
+                    isValid = false;
+                    message = `Minimum withdrawal is ${Number(selectedMethod.min).toFixed(4)} TON`;
+                    messageType = 'error';
+                }
+                else if (amount > balance) {
+                    isValid = false;
+                    message = 'Insufficient balance';
+                    messageType = 'error';
+                }
+                // التحقق من الإحالات إذا كانت مطلوبة
+                else if (minRefs > 0 && (userState.referrals || 0) < minRefs) {
+                    isValid = false;
+                    message = `Need ${minRefs} referrals to withdraw`;
+                    messageType = 'error';
+                }
+
+                // تحديث رسالة التحقق
+                if (validationMessage) {
+                    validationMessage.innerHTML = message ? `<i class="fas fa-${messageType === 'success' ? 'check-circle' : messageType === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}` : '';
+                    validationMessage.className = `validation-message validation-${messageType}`;
+                }
+
+                // تحديث حالة الزر
+                if (withdrawBtn) {
+                    if (isValid && method && account && amount > 0) {
+                        withdrawBtn.disabled = false;
+                        withdrawBtn.className = 'withdraw-btn withdraw-btn-enabled';
+                    } else {
+                        withdrawBtn.disabled = true;
+                        withdrawBtn.className = 'withdraw-btn withdraw-btn-disabled';
+                    }
+                }
+
+                return isValid;
+            };
+
+            // إضافة مستمعي الأحداث
+            accountInput.addEventListener('input', validateForm);
+            methodSelect.addEventListener('change', validateForm);
+            amountInput.addEventListener('input', validateForm);
+
+            // التحقق الأولي
+            validateForm();
         };
 
         const renderDynamicLinks = () => {
